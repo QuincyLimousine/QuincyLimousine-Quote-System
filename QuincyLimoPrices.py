@@ -38,15 +38,16 @@ else:
         selected_model = st.selectbox("選擇車型 (Model):", models)
 
     col_d1, col_d2 = st.columns(2)
+    
     with col_d1:
-        # 區域 (District)
-        districts = ["請選擇"] + sorted(df['District'].dropna().unique().tolist())
-        selected_district = st.selectbox("區域 (District):", districts)
-
-    with col_d2:
         # 地區 (Region)
         regions = ["請選擇"] + sorted(df['Region'].dropna().unique().tolist())
         selected_region = st.selectbox("地區 (Region):", regions)
+
+    with col_d2:
+        # 區域 (District)
+        districts = ["請選擇"] + sorted(df['District'].dropna().unique().tolist())
+        selected_district = st.selectbox("分區 (District):", districts)
 
     st.divider()
 
