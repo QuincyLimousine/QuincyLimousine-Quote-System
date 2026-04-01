@@ -3,20 +3,19 @@ import pandas as pd
 from dateutil import parser
 from datetime import date
 
-# 1. 網頁基本設定 (維持 centered 排版)
+# 1. 網頁基本設定
 st.set_page_config(page_title="Quincy Limo Prices", layout="centered")
 
-# --- 【關鍵修改】使用 HTML 自訂標題與 Logo ---
-# 請將下方的連結替換為您公司的 Logo 圖片網址
-# 圖片建議為正方形或透明背景，效果最佳
-logo_url = "https://i.imgur.com/your_logo_here.png" # <--- 替換此處
+# --- 【GitHub Logo 設定】 ---
+# 請將下方連結替換為您從 GitHub 取得的 Raw 連結
+logo_url = "https://raw.githubusercontent.com/您的用戶名/項目名/分支名/logo.png"
 
-# 使用 HTML/CSS 讓 Logo 與文字並排，大小維持與 Emoji 類似
+# 使用 HTML 讓 Logo 與標題並排，高度設定為 40px 以匹配標題大小
 st.markdown(
     f"""
-    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        <img src="{logo_url}" style="height: 35px; margin-right: 15px;">
-        <h1 style="margin: 0; font-size: 2.2rem;">Quincy Limo 預約報價系統</h1>
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <img src="{logo_url}" style="height: 40px;">
+        <h1 style="margin: 0; font-size: 2rem;">Quincy Limo 預約報價系統</h1>
     </div>
     """,
     unsafe_allow_html=True
@@ -44,7 +43,6 @@ else:
     col_t1, col_t2 = st.columns(2)
     
     with col_t1:
-        # 設定 min_value=date.today()，讓使用者無法選擇今天以前的日期
         selected_date = st.date_input(
             "預約上車日期 (Date):", 
             value=date.today(),
@@ -96,7 +94,7 @@ else:
 
     st.divider()
 
-    # --- 最終報價顯示邏輯 ---
+    # --- 最終報價顯示 ---
     required_fields = [selected_type, selected_model, selected_region, selected_district]
     
     if "請選擇" not in required_fields and "請先選擇地區" not in required_fields:
