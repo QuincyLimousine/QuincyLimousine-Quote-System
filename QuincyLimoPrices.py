@@ -37,7 +37,7 @@ if df.empty:
     st.error("無法載入資料庫，請檢查 Google Sheet 設定。")
 else:
     # --- 1. 預約時間與日期 ---
-    st.subheader("第一步：預約時間與日期")
+    st.subheader("1. 預約時間與日期")
     col_t1, col_t2 = st.columns(2)
     with col_t1:
         selected_date = st.date_input("預約上車日期 (Date):", value=date.today(), min_value=date.today())
