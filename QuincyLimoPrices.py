@@ -74,9 +74,10 @@ else:
     # --- 【新增：動態車型圖片預覽】 ---
     # 設定車型與圖片連結的對應關係 (請確保 Key 名稱與 Google Sheet 內的車型名稱完全一致)
     model_images = {
-        "Toyota Alphard (7-seater)": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/alphard.png",
-        "Mercedes-Benz S-Class": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/sclass.png",
-        "Tesla Model X": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/teslax.png"
+        "Comfort 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Compact%205-Seater.png",
+        "Deluxe 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%205-Seater.png",
+        "Deluxe 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%207-Seater.png",
+        "Premium 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Premium%207-Seater.png"
     }
     
     if selected_model in model_images:
