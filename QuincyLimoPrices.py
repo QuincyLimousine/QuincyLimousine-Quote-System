@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from dateutil import parser
-from datetime import date
+from datetime import date, datetime  # 引入 datetime 處理現在時間
 
 # 1. 初始化語言設定 (預設為中文)
 if 'lang' not in st.session_state:
@@ -19,6 +19,7 @@ texts = {
         'time_label': '使用時間:',
         'time_placeholder': '例如: 22:30',
         'night_warning': '🌙 已計入夜間服務費 $100 (22:00-07:00)',
+        'time_error': '❌ 選擇的時間不能早於當前時間。',
         'step2': '2. 接送詳情',
         'type_label': '接送類型:',
         'region_label': '地區:',
@@ -46,6 +47,7 @@ texts = {
         'time_label': 'Pick-up Time:',
         'time_placeholder': 'e.g. 10:30 PM',
         'night_warning': '🌙 Night surcharge $100 included (22:00-07:00)',
+        'time_error': '❌ Selected time cannot be in the past.',
         'step2': '2. Transfer Details',
         'type_label': 'Transfer Type:',
         'region_label': 'Region:',
@@ -73,7 +75,7 @@ L = texts[st.session_state.lang]
 # 3. 網頁基本設定
 st.set_page_config(page_title="Quincy Limo Prices", layout="centered")
 
-# 頂部：標題與語言切換按鈕並列
+# 頂部：標題與語言切換按鈕
 col_title, col_lang = st.columns([0.8, 0.2])
 with col_title:
     logo_url = "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/quincyLimo_Q.png"
@@ -108,16 +110,32 @@ else:
     # --- 1. 時間日期 ---
     st.subheader(L['step1'])
     col_t1, col_t2 = st.columns(2)
+    
+    current_now = datetime.now()
+    is_invalid_time = False # 標記是否輸入了過去的時間
+
     with col_t1:
         selected_date = st.date_input(L['date_label'], value=date.today(), min_value=date.today())
+    
     with col_t2:
         pickup_input = st.text_input(L['time_label'], placeholder=L['time_placeholder'])
         night_fee = 0
+        
         if pickup_input:
             try:
+                # 解析輸入時間
                 parsed_time = parser.parse(pickup_input).time()
-                if parsed_time >= pd.to_datetime("22:00").time() or parsed_time <= pd.to_datetime("07:00").time():
-                    night_fee = 100
+                
+                # 檢查是否為「今天」且「時間已過」
+                if selected_date == date.today():
+                    if parsed_time < current_now.time():
+                        st.error(L['time_error'])
+                        is_invalid_time = True
+                
+                # 檢查夜間加費 (22:00 - 07:00)
+                if not is_invalid_time:
+                    if parsed_time >= pd.to_datetime("22:00").time() or parsed_time <= pd.to_datetime("07:00").time():
+                        night_fee = 100
             except:
                 st.caption("Format: 22:30 / 10:30 PM")
 
@@ -129,12 +147,10 @@ else:
     with col_s1:
         t_types = [L['select_op']] + sorted(df['Transfer Type'].dropna().unique().tolist())
         selected_type = st.selectbox(L['type_label'], t_types)
-        
         mods = [L['select_op']] + sorted(df['Model'].dropna().unique().tolist())
         selected_model = st.selectbox(L['model_label'], mods)
         
     with col_s2:
-        
         regs = [L['select_op']] + sorted(df['Region'].dropna().unique().tolist())
         selected_region = st.selectbox(L['region_label'], regs)
         
@@ -177,7 +193,9 @@ else:
 
     # --- 報價計算 ---
     required = [selected_type, selected_model, selected_region, selected_district]
-    if L['select_op'] not in required and L['select_reg_first'] not in required:
+    
+    # 只有在時間有效、且所有欄位已填寫的情況下才計算
+    if L['select_op'] not in required and L['select_reg_first'] not in required and not is_invalid_time:
         res = df[(df['Transfer Type'] == selected_type) & (df['Model'] == selected_model) & 
                  (df['Region'] == selected_region) & (df['District'] == selected_district)]
 
@@ -218,5 +236,7 @@ else:
                 st.warning(L['night_warning'])
         else:
             st.warning(L['no_price'])
+    elif is_invalid_time:
+        st.warning(L['time_error'])
     else:
         st.info(L['info_msg'])
