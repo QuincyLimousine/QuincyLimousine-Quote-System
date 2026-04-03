@@ -49,7 +49,7 @@ texts = {
         'step2': '2. Transfer Details',
         'type_label': 'Transfer Type:',
         'region_label': 'Region:',
-        'model_label': 'Model:',
+        'model_label': 'Vehicle type:',
         'district_label': 'District:',
         'select_op': 'Please Select',
         'select_reg_first': 'Select region first',
