@@ -117,9 +117,8 @@ else:
     user_name = st.text_input(L['name_label']).strip()
 
     raw_codes = [
-        ("🇦🇺 Australia +61", "+61"), ("🇨🇳 China +86", "+86"), ("🇭🇰 Hong Kong +852", "+852"), 
-        ("🇲🇴 Macau +853", "+853"), ("🇲🇾 Malaysia +60", "+60"), ("🇸🇬 Singapore +65", "+65"), 
-        ("🇹🇼 Taiwan +886", "+886"), ("🇬🇧 UK +44", "+44"), ("🇺🇸 USA +1", "+1")
+        ("🇨🇳 China +86", "+86"), ("🇭🇰 Hong Kong +852", "+852"), 
+        ("🇲🇴 Macau +853", "+853"), ("🇹🇼 Taiwan +886", "+886"), ("🇬🇧 UK +44", "+44"), ("🇺🇸 USA +1", "+1")
     ]
     country_codes = sorted(raw_codes, key=lambda x: x[0][3:])
 
@@ -146,15 +145,15 @@ else:
     col_t1, col_t2 = st.columns(2)
 
     with col_t1:
-        # 移除了 min_value=date.today()，允許選擇過去日期
-        selected_date = st.date_input(L['date_label'], value=date.today())
+        # ✅ 恢復限制：不可選取今日前的日期 (min_value=date.today())
+        selected_date = st.date_input(L['date_label'], value=date.today(), min_value=date.today())
     with col_t2:
         pickup_input = st.text_input(L['time_label'], placeholder=L['time_placeholder']).strip()
         night_fee = 0
         if pickup_input:
             try:
                 parsed_time = parser.parse(pickup_input).time()
-                # 僅保留夜間加費邏輯，刪除了 combined_dt 過期檢查
+                # 僅計算夜間加費，不阻攔報價生成
                 if parsed_time >= pd.to_datetime("22:00").time() or parsed_time <= pd.to_datetime("07:00").time():
                     night_fee = 100
             except:
@@ -193,8 +192,7 @@ else:
 
     st.divider()
 
-    # --- 報價觸發門檻判斷 ---
-    # 移除了 is_invalid_time 的判斷，只要有填寫時間即可
+    # --- 報價觸發門檻 ---
     is_contact_ready = user_name != "" and phone_number_only != "" and is_email_valid
     is_menu_ready = (
         selected_type != L['select_op'] and 
@@ -221,6 +219,7 @@ else:
             
             total_price = base_price + seat_fee + night_fee + meet_greet_fee
             
+            # 行程描述
             if "Arrival" in selected_type:
                 route = f"HKIA → {selected_district}"
             elif "Departure" in selected_type:
