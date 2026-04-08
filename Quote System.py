@@ -214,16 +214,25 @@ elif st.session_state.step == 2:
     st.divider()
     
     col_s1, col_s2 = st.columns(2)
+
+    model_images = {
+        "Comfort 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Compact%205-Seater.png",
+        "Deluxe 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%205-Seater.png",
+        "Deluxe 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%207-Seater.png",
+        "Premium 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Premium%207-Seater.png"
+    }
+    if selected_model in model_images:
+        st.image(model_images[selected_model], use_container_width=True)
+        
     with col_s1:
         t_types = [L['select_op']] + sorted(df['Transfer Type'].dropna().unique().tolist())
         st.selectbox(L['type_label'], t_types, key='s_type')
-        regs = [L['select_op']] + sorted(df['Region'].dropna().unique().tolist())
-        st.selectbox(L['region_label'], regs, key='s_region')
-        
-    with col_s2:
         mods = [L['select_op']] + sorted(df['Model'].dropna().unique().tolist())
         st.selectbox(L['model_label'], mods, key='s_model')
         
+    with col_s2:
+        regs = [L['select_op']] + sorted(df['Region'].dropna().unique().tolist())
+        st.selectbox(L['region_label'], regs, key='s_region')
         if st.session_state.s_region != L['select_op']:
             dists = [L['select_op']] + sorted(df[df['Region'] == st.session_state.s_region]['District'].dropna().unique().tolist())
             st.selectbox(L['district_label'], dists, key='s_district')
