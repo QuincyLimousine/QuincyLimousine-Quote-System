@@ -212,14 +212,6 @@ elif st.session_state.step == 2:
     
     st.divider()
 
-    # --- 車型圖片顯示邏輯 ---
-    model_images = {
-        "Comfort 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Compact%205-Seater.png",
-        "Deluxe 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%205-Seater.png",
-        "Deluxe 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%207-Seater.png",
-        "Premium 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Premium%207-Seater.png"
-    }
-    
     # 這裡先預抓目前的選擇 (或是預設值)
     current_model = st.session_state.get('s_model', L['select_op'])
     if current_model in model_images:
@@ -232,6 +224,14 @@ elif st.session_state.step == 2:
         st.selectbox(L['type_label'], t_types, key='s_type')
         mods = [L['select_op']] + sorted(df['Model'].dropna().unique().tolist())
         st.selectbox(L['model_label'], mods, key='s_model')
+
+    # --- 車型圖片顯示邏輯 ---
+    model_images = {
+        "Comfort 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Compact%205-Seater.png",
+        "Deluxe 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%205-Seater.png",
+        "Deluxe 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%207-Seater.png",
+        "Premium 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Premium%207-Seater.png"
+    }
         
     with col_s2:
         regs = [L['select_op']] + sorted(df['Region'].dropna().unique().tolist())
