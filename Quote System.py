@@ -9,12 +9,12 @@ if 'lang' not in st.session_state:
 if 'step' not in st.session_state:
     st.session_state.step = 1
 
-persistent_vars = ['u_name_val', 'u_phone_full', 'u_phone_raw_val', 'u_email_val', 
+persistent_vars = ['u_name_val', 'u_phone_full', 'u_phone_raw_val', 'u_email_val', 'u_social_val',
                    'p_time_val', 's_type_val', 's_model_val', 's_region_val', 
                    's_district_val', 'seat_count_val', 'mg_selected_val', 's_date_val']
 for var in persistent_vars:
     if var not in st.session_state:
-        st.session_state[var] = "" if "val" in var else False
+        st.session_state[var] = [] if var == 'u_social_val' else ("" if "val" in var else False)
 
 def toggle_language():
     st.session_state.lang = 'EN' if st.session_state.lang == 'CH' else 'CH'
@@ -32,6 +32,7 @@ texts = {
         'name_label': '姓名 (Full Name):',
         'phone_label': '電話號碼 (Phone Number):',
         'email_label': 'Gmail 地址:',
+        'social_label': '聯絡方式 (可複選):',
         'email_error': '⚠️ 請輸入有效的電地址 (需包含 @gmail.com)',
         'date_label': '使用日期:',
         'time_label': '使用時間:',
@@ -53,7 +54,7 @@ texts = {
         'no_price': '查無此組合價格，請聯繫客服。',
         'seat_unit': '張',
         'map_labels': {
-            "Name": "客戶姓名", "Phone": "聯絡電話", "Gmail": "Gmail", 
+            "Name": "客戶姓名", "Phone": "聯絡電話", "Gmail": "Gmail", "Social": "聯絡方式",
             "Date": "日期", "Time": "時間", "Route": "行程路徑", 
             "Seat": "安全座椅", "MG": "接機服務", "Base": "基本車資", "Total": "總費用"
         }
@@ -69,6 +70,7 @@ texts = {
         'name_label': 'Full Name:',
         'phone_label': 'Phone Number:',
         'email_label': 'Gmail Address:',
+        'social_label': 'Contact Method (Multi-select):',
         'email_error': '⚠️ Invalid Gmail (must contain @gmail.com)',
         'date_label': 'Date:',
         'time_label': 'Pick-up Time:',
@@ -90,7 +92,7 @@ texts = {
         'no_price': 'Price not found for this combination.',
         'seat_unit': 'Seat(s)',
         'map_labels': {
-            "Name": "Name", "Phone": "Phone", "Gmail": "Gmail", 
+            "Name": "Name", "Phone": "Phone", "Gmail": "Gmail", "Social": "Contact Method",
             "Date": "Date", "Time": "Time", "Route": "Route", 
             "Seat": "Child Seat", "MG": "Meet & Greet", "Base": "Base Fare", "Total": "Total"
         }
@@ -131,7 +133,6 @@ if st.session_state.step == 1:
     st.subheader(L['step1'])
     st.text_input(L['name_label'], key='u_name', value=st.session_state.u_name_val)
     
-    # 全球區號清單 (已移除國旗 Emoji)
     raw_codes_data = [
         ("Afghanistan +93", "+93"), ("Albania +355", "+355"), ("Algeria +213", "+213"),
         ("Andorra +376", "+376"), ("Angola +244", "+244"), ("Argentina +54", "+54"),
@@ -173,7 +174,6 @@ if st.session_state.step == 1:
     
     col_c, col_p = st.columns([0.45, 0.55])
     with col_c:
-        # 自動定位 Hong Kong 的 Index
         try:
             hk_idx = next(i for i, c in enumerate(country_codes) if "Hong Kong" in c[0])
         except StopIteration:
@@ -184,6 +184,9 @@ if st.session_state.step == 1:
         st.text_input(L['phone_label'], key='u_phone_raw', value=st.session_state.u_phone_raw_val)
     
     st.text_input(L['email_label'], key='u_email', value=st.session_state.u_email_val)
+    
+    # --- 新增欄位 ---
+    st.multiselect(L['social_label'], options=['WhatsApp', 'Line', 'WeChat'], key='u_social', default=st.session_state.u_social_val)
     
     if st.button(L['next']):
         name = st.session_state.u_name.strip()
@@ -196,39 +199,32 @@ if st.session_state.step == 1:
             st.session_state.u_phone_raw_val = phone
             st.session_state.u_phone_full = f"{sel_code} {phone}"
             st.session_state.u_email_val = email
+            st.session_state.u_social_val = st.session_state.u_social
             st.session_state.step = 2
             st.rerun()
         else:
             st.warning(L['fill_all'])
 
-# 步驟 2: 行程詳情
+# 步驟 2: 行程詳情 (保持不變)
 elif st.session_state.step == 2:
     st.subheader(L['step2'])
-    
     col_t1, col_t2 = st.columns(2)
     with col_t1:
         st.date_input(L['date_label'], key='s_date_widget', min_value=date.today())
     with col_t2:
         st.text_input(L['time_label'], key='p_time', value=st.session_state.p_time_val)
-    
     st.divider()
-    
-    # 第一行：接送類型與車型選擇
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         t_types = [L['select_op']] + sorted(df['Transfer Type'].dropna().unique().tolist())
         st.selectbox(L['type_label'], t_types, key='s_type')
-        
     with col_s2:
         mods = [L['select_op']] + sorted(df['Model'].dropna().unique().tolist())
         selected_model = st.selectbox(L['model_label'], mods, key='s_model')
-
-    # 第二行：地區與區域選擇
     col_s3, col_s4 = st.columns(2)
     with col_s3:
         regs = [L['select_op']] + sorted(df['Region'].dropna().unique().tolist())
         st.selectbox(L['region_label'], regs, key='s_region')
-        
     with col_s4:
         if st.session_state.s_region != L['select_op']:
             dists = [L['select_op']] + sorted(df[df['Region'] == st.session_state.s_region]['District'].dropna().unique().tolist())
@@ -236,21 +232,16 @@ elif st.session_state.step == 2:
         else:
             st.selectbox(L['district_label'], [L['select_reg_first']], disabled=True, key='s_district_tmp')
 
-    # --- 更新：車型圖片顯示 (移除中間的 column 限制，使其與上方選單同闊) ---
     model_images = {
         "Comfort 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Compact%205-Seater.png",
         "Deluxe 5-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%205-Seater.png",
         "Deluxe 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Deluxe%207-Seater.png",
         "Premium 7-Seater": "https://raw.githubusercontent.com/QuincyLimousine/Quincy-Limousine-Prices/main/Vehicle%20Type/Premium%207-Seater.png"
     }
-    
     if selected_model in model_images:
-        # 直接使用 st.image 並設定 use_container_width=True
-        # 它會自動與當前佈局的最大寬度（即上方兩欄合併後的寬度）對齊
         st.image(model_images[selected_model], use_container_width=True)
 
     st.divider()
-
     col_o1, col_o2 = st.columns(2)
     with col_o1:
         st.number_input(L['seat_label'], min_value=0, max_value=4, key='seat_count')
@@ -284,15 +275,12 @@ elif st.session_state.step == 2:
 # 步驟 3: 報價彙總
 elif st.session_state.step == 3:
     st.subheader(L['step3']) 
-    
-    # 資料庫比對邏輯
     res = df[(df['Transfer Type'] == st.session_state.s_type_val) & 
              (df['Model'] == st.session_state.s_model_val) & 
              (df['Region'] == st.session_state.s_region_val) & 
              (df['District'] == st.session_state.s_district_val)]
 
     if not res.empty:
-        # --- 費用計算 (與先前相同) ---
         base_raw = res.iloc[0]['Result']
         try:
             base_price = int(''.join(filter(str.isdigit, str(base_raw))))
@@ -311,18 +299,16 @@ elif st.session_state.step == 3:
         route = f"HKIA → {st.session_state.s_district_val}" if "Arrival" in st.session_state.s_type_val else (f"{st.session_state.s_district_val} → HKIA" if "Departure" in st.session_state.s_type_val else f"{st.session_state.s_type_val}")
         m = L['map_labels']
 
-        # --- 1. 客戶資訊 (隱藏於 Expander) ---
-        # 這裡將名稱改為根據語系顯示 "客戶資訊" 或 "Customer Information"
         info_label = "👤 客戶資訊" if st.session_state.lang == 'CH' else "👤 Customer Information"
         with st.expander(info_label):
             customer_data = [
                 (m["Name"], st.session_state.u_name_val),
                 (m["Phone"], st.session_state.u_phone_full),
-                (m["Gmail"], st.session_state.u_email_val)
+                (m["Gmail"], st.session_state.u_email_val),
+                (m["Social"], ", ".join(st.session_state.u_social_val)) # 新增顯示
             ]
             st.table(pd.DataFrame(customer_data, columns=[L['item'], L['details']]))
 
-        # --- 2. 行程與費用彙總 (直接顯示) ---
         billing_items = [
             (m["Date"], st.session_state.s_date_val.strftime("%Y-%m-%d")),
             (m["Time"], st.session_state.p_time_val),
