@@ -1,7 +1,12 @@
 import streamlit as st
 import pandas as pd
+import requests 
+import json
 from dateutil import parser
 from datetime import date, datetime
+
+# --- 配置區 ---
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznNItxlUNtv-2ey6LRdaTdtrQCRZitmOciJmvBwf6wE-mfkhTShV9B6PvvR4cqPKD/exec"
 
 # --- 1. 初始化與變數設定 ---
 if 'lang' not in st.session_state:
@@ -28,6 +33,7 @@ texts = {
         'step3': '步驟 3: 最終預約報價',
         'next': '下一步',
         'prev': '返回上一步',
+        'submit': '✅ 確認預約並送出',
         'fill_all': '⚠️ 請填寫所有必填項以繼續。',
         'name_label': '姓名:',
         'phone_label': '電話號碼:',
@@ -53,6 +59,8 @@ texts = {
         'total_metric': '預計總費用',
         'no_price': '查無此組合價格，請聯繫客服。',
         'seat_unit': '張',
+        'success_msg': '🎉 預約資料已成功送出！我們將盡快聯繫您。',
+        'fail_msg': '❌ 送出失敗，請再試一次。',
         'map_labels': {
             "Name": "客戶姓名", "Phone": "聯絡電話", "Gmail": "Gmail", "Social": "聯絡方式",
             "Date": "日期", "Time": "時間", "Route": "行程路徑", 
@@ -66,6 +74,7 @@ texts = {
         'step3': 'Step 3: Final Quote',
         'next': 'Next',
         'prev': 'Back',
+        'submit': '✅ Confirm & Submit',
         'fill_all': '⚠️ Please fill in all required fields.',
         'name_label': 'Full Name:',
         'phone_label': 'Phone Number:',
@@ -91,6 +100,8 @@ texts = {
         'total_metric': 'Total Estimated Price',
         'no_price': 'Price not found for this combination.',
         'seat_unit': 'Seat(s)',
+        'success_msg': '🎉 Reservation submitted successfully! We will contact you soon.',
+        'fail_msg': '❌ Submission failed. Please try again.',
         'map_labels': {
             "Name": "Name", "Phone": "Phone", "Gmail": "Gmail", "Social": "Contact Method",
             "Date": "Date", "Time": "Time", "Route": "Route", 
@@ -185,7 +196,6 @@ if st.session_state.step == 1:
     
     st.text_input(L['email_label'], key='u_email', value=st.session_state.u_email_val)
     
-    # --- 新增欄位 ---
     st.multiselect(L['social_label'], options=['WhatsApp', 'Line', 'WeChat'], key='u_social', default=st.session_state.u_social_val)
     
     if st.button(L['next']):
@@ -205,7 +215,7 @@ if st.session_state.step == 1:
         else:
             st.warning(L['fill_all'])
 
-# 步驟 2: 行程詳情 (保持不變)
+# 步驟 2: 行程詳情
 elif st.session_state.step == 2:
     st.subheader(L['step2'])
     col_t1, col_t2 = st.columns(2)
@@ -272,7 +282,7 @@ elif st.session_state.step == 2:
             else:
                 st.warning(L['fill_all'])
 
-# 步驟 3: 報價彙總
+# 步驟 3: 報價彙總與送出
 elif st.session_state.step == 3:
     st.subheader(L['step3']) 
     res = df[(df['Transfer Type'] == st.session_state.s_type_val) & 
@@ -305,7 +315,7 @@ elif st.session_state.step == 3:
                 (m["Name"], st.session_state.u_name_val),
                 (m["Phone"], st.session_state.u_phone_full),
                 (m["Gmail"], st.session_state.u_email_val),
-                (m["Social"], ", ".join(st.session_state.u_social_val)) # 新增顯示
+                (m["Social"], ", ".join(st.session_state.u_social_val))
             ]
             st.table(pd.DataFrame(customer_data, columns=[L['item'], L['details']]))
 
@@ -333,9 +343,36 @@ elif st.session_state.step == 3:
         if night_fee > 0:
             st.warning(L['night_warning'])
             
+        # --- 新增送出功能 ---
+        if st.button(L['submit']):
+            payload = {
+                "name": st.session_state.u_name_val,
+                "phone": st.session_state.u_phone_full,
+                "email": st.session_state.u_email_val,
+                "social": ", ".join(st.session_state.u_social_val),
+                "date": str(st.session_state.s_date_val),
+                "time": st.session_state.p_time_val,
+                "route": route,
+                "seat": st.session_state.seat_count_val,
+                "mg": "Yes" if st.session_state.mg_selected_val else "No",
+                "model": st.session_state.s_model_val,
+                "district": st.session_state.s_district_val,
+                "total": total_price
+            }
+            
+            try:
+                response = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload))
+                if response.status_code == 200:
+                    st.success(L['success_msg'])
+                    st.balloons()
+                else:
+                    st.error(L['fail_msg'])
+            except Exception as e:
+                st.error(f"⚠️ {L['fail_msg']}: {e}")
+
+        if st.button(L['prev']): 
+            st.session_state.step = 2
+            st.rerun()
+            
     else: 
         st.error(L['no_price'])
-    
-    if st.button(L['prev']): 
-        st.session_state.step = 2
-        st.rerun()
