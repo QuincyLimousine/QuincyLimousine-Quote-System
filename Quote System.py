@@ -6,7 +6,7 @@ from dateutil import parser
 from datetime import date, datetime
 
 # --- 配置區 ---
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznNItxlUNtv-2ey6LRdaTdtrQCRZitmOciJmvBwf6wE-mfkhTShV9B6PvvR4cqPKD/exec"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxg6257SpGnlvvvNPk2nnZwKUkzjPjikPMU2YChXmYHLV1swPAsqLOw0P_uaQAm-r4n/exec"
 
 # --- 1. 初始化與變數設定 ---
 if 'lang' not in st.session_state:
