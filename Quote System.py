@@ -5,6 +5,54 @@ import json
 from dateutil import parser
 from datetime import date, datetime
 
+# --- Neumorphic CSS 注入 ---
+def inject_neumorphic_css():
+    st.markdown("""
+    <style>
+    /* 全局背景色 */
+    .stApp {
+        background-color: #e0e0e0;
+    }
+    
+    /* 容器風格 */
+    div.stVerticalBlock {
+        background-color: #e0e0e0;
+    }
+
+    /* 輸入框 (Inset) */
+    .stTextInput > div > div > input, 
+    .stSelectbox > div > div {
+        background-color: #e0e0e0 !important;
+        border: none !important;
+        border-radius: 10px !important;
+        box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff !important;
+    }
+
+    /* 按鈕 (Outset) */
+    div.stButton > button {
+        background-color: #e0e0e0 !important;
+        border: none !important;
+        border-radius: 15px !important;
+        box-shadow: 6px 6px 12px #bebebe, -6px -6px 12px #ffffff !important;
+        color: #333 !important;
+        font-weight: bold !important;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    div.stButton > button:active {
+        box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff !important;
+    }
+
+    /* 標題與文字 */
+    h1, h2, h3 {
+        color: #333 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# 執行 CSS 注入
+inject_neumorphic_css()
+
 # --- 配置區 ---
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwT7jY5OlAfu7Y8OTnKdzP5TGXxq3Cs6_SZuKANIQxYHCA-F7zkLrKEXdwh1qJCvljj/exec"
 
